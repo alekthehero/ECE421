@@ -1,0 +1,607 @@
+
+    load  r1, low:#f_fixes
+    loadh r1, high:#f_fixes
+    add   r1, PC-2
+    call  r1
+    push  0x110    // argv address
+    push  2
+    load  r1, low:#g_start
+    loadh r1, high:#g_start
+    add   r1, PC-2
+    store sp, [x_spprecall]
+.begin
+    call  r1
+    add   sp, 2
+    halt  0x7777
+x_spprecall:
+    .space 1
+.import g_stringtonetaddress
+.import g_netaddresstostring
+.import g_outsv
+.import g_library_inch
+.import g_set_kb_buffer
+.import g_random
+.import g_strlen
+.import g_devctlv
+.import g_devctl
+.import g_datetime2
+.import g_datetime
+.import g_floatformat
+.import g_useconds
+.import g_seconds
+.import g_sleep
+.import g_returnto
+.import g_thiscall
+.import g_lhs
+.import g_numbargs
+.import g_inno
+.import t_5_inch
+.import g_out
+.import g_out4ch
+.import g_outs
+.import g_outf
+.import g_outbin
+.import g_outhex
+.import g_outno
+.import g_outch
+.import g_io_reset_statics
+.link "/usr/local/bcpl/io"
+                         // directory is static t_1_directory
+                         // superblock is static t_2_superblock
+
+.source 19
+                     // Line 19, the function ins
+g_ins:
+                         // destination is parameter 1, FP+3
+                         // numToRead is parameter 2, FP+4
+     push  FP
+     load  FP, SP
+     sub   SP, 3
+                         // pos is local 1, FP-1
+                         // max is local 2, FP-2
+                         // c is local 3, FP-3
+.source 20 initialise pos
+     load  R0, 0
+     store R0, [FP-1]
+.source 20 initialise max
+     load  R1, 4
+     mul   R1, [FP+4]
+     sub   R1, 1
+     store R1, [FP-2]
+.source 20 initialise c
+     push  0
+     call  [t_5_inch]
+     add   SP, 1
+     store R1, [FP-3]
+.source 21, statement/while
+L2:
+     load  R1, [FP-3]
+     comp  R1, 32
+     jcond eql, L4
+     load  R1, [FP-3]
+     comp  R1, 10
+     jcond neq, L3
+L4:
+.source 22, assignment/assign c
+     push  0
+     call  [t_5_inch]
+     add   SP, 1
+     store R1, [FP-3]
+     jump  L2
+L3:
+.source 23, statement/while
+L5:
+     load  R1, [FP-3]
+     comp  R1, 32
+     jcond leq, L6
+.source 24, assignment/assign c
+     load  R1, [FP-1]
+     load  R0, [FP-3]
+     stch  R1, [FP+3]
+.source 25, assignment/assign pos
+     load  R1, [FP-1]
+     add   R1, 1
+     store R1, [FP-1]
+.source 26, statement/if
+     load  R1, [FP-1]
+     comp  R1, [FP-2]
+     jcond leq, L7
+.source 27, statement/break
+     jump  L6
+L7:
+.source 28, assignment/assign c
+     push  0
+     call  [t_5_inch]
+     add   SP, 1
+     store R1, [FP-3]
+     jump  L5
+L6:
+.source 30, assignment/assign
+     load  R1, [FP-1]
+     load  R0, 0
+     stch  R1, [FP+3]
+.source 31, statement/resultis destination
+     load  R1, [FP+3]
+     jump  L1
+L1:
+     load  SP, FP
+     pop   FP
+     ret
+
+.source 34
+                     // Line 34, the function strcmp
+g_strcmp:
+                         // stringA is parameter 1, FP+3
+                         // stringB is parameter 2, FP+4
+     push  FP
+     load  FP, SP
+     sub   SP, 1
+                         // pos is local 1, FP-1
+.source 35 initialise pos
+     load  R0, 0
+     store R0, [FP-1]
+.source 36, statement/while
+L9:
+     sub   SP, 2
+                         // charA is local 2, FP-2
+                         // charB is local 3, FP-3
+.source 37 initialise charA
+     load  R1, [FP-1]
+     ldch  R1, [FP+3]
+     store R1, [FP-2]
+.source 37 initialise charB
+     load  R1, [FP-1]
+     ldch  R1, [FP+4]
+     store R1, [FP-3]
+.source 38, statement/if
+     load  R1, [FP-2]
+     comp  R1, [FP-3]
+     jcond eql, L11
+.source 39, statement/resultis
+     load  R1, [FP-2]
+     sub   R1, [FP-3]
+     jump  L8
+L11:
+.source 40, statement/if
+     load  R1, [FP-2]
+     comp  R1, 0
+     jcond neq, L12
+.source 41, statement/resultis
+     load  R1, 0
+     jump  L8
+L12:
+.source 42, assignment/assign pos
+     load  R1, [FP-1]
+     add   R1, 1
+     store R1, [FP-1]
+     add   SP, 2
+     jump  L9
+L10:
+L8:
+     load  SP, FP
+     pop   FP
+     ret
+
+.source 46
+                     // Line 46, the function mount
+g_mount:
+     push  FP
+     load  FP, SP
+     sub   SP, 2
+                         // dirBlock is local 1, FP-1
+                         // success is local 2, FP-2
+.source 48, assignment/assign success
+     push  [t_2_superblock]
+     push  0
+     push  1
+     push  1
+     push  8
+     call  g_devctl
+     add   SP, 5
+     store R1, [FP-2]
+.source 49, statement/if
+     load  R1, [FP-2]
+     comp  R1, 1
+     jcond eql, L14
+.source 50, fnap out
+     push  [FP-2]
+     push  s_1
+     push  4
+     call  g_out
+     add   SP, 3
+L14:
+.source 51, assignment/assign dirBlock
+     load  R1, [t_2_superblock]
+     add   R1, 0
+     load  R1, [R1]
+     store R1, [FP-1]
+.source 52, fnap out
+     load  R1, [t_2_superblock]
+     add   R1, 1
+     load  R1, [R1]
+     push  R1
+     push  s_2
+     push  4
+     call  g_out
+     add   SP, 3
+.source 53, fnap out
+     push  [FP-1]
+     push  s_3
+     push  4
+     call  g_out
+     add   SP, 3
+.source 54, assignment/assign success
+     push  [t_1_directory]
+     push  [FP-1]
+     push  1
+     push  1
+     push  8
+     call  g_devctl
+     add   SP, 5
+     store R1, [FP-2]
+.source 55, statement/if
+     load  R1, [FP-2]
+     comp  R1, 1
+     jcond eql, L15
+.source 56, fnap out
+     push  [FP-2]
+     push  s_4
+     push  4
+     call  g_out
+     add   SP, 3
+L15:
+L13:
+     load  SP, FP
+     pop   FP
+     ret
+
+.source 59
+                     // Line 59, the function dismount
+g_dismount:
+     push  FP
+     load  FP, SP
+     sub   SP, 1
+                         // success is local 1, FP-1
+.source 61, assignment/assign success
+     push  [t_1_directory]
+     load  R1, [t_2_superblock]
+     add   R1, 0
+     load  R1, [R1]
+     push  R1
+     push  1
+     push  2
+     push  8
+     call  g_devctl
+     add   SP, 5
+     store R1, [FP-1]
+.source 62, statement/if
+     load  R1, [FP-1]
+     comp  R1, 1
+     jcond eql, L17
+.source 63, fnap out
+     push  [FP-1]
+     push  s_5
+     push  4
+     call  g_out
+     add   SP, 3
+L17:
+.source 64, assignment/assign
+     push  0
+     call  g_seconds
+     add   SP, 1
+     load  R2, [t_2_superblock]
+     add   R2, 1
+     store R1, [R2]
+.source 65, fnap devctl
+     push  [t_2_superblock]
+     push  0
+     push  1
+     push  2
+     push  8
+     call  g_devctl
+     add   SP, 5
+L16:
+     load  SP, FP
+     pop   FP
+     ret
+
+.source 68
+                     // Line 68, the function format
+g_format:
+     push  FP
+     load  FP, SP
+     sub   SP, 3
+                         // success is local 1, FP-1
+                         // now is local 2, FP-2
+.source 70 initialise now
+     push  0
+     call  g_seconds
+     add   SP, 1
+     store R1, [FP-2]
+                         // dirBlock is local 3, FP-3
+.source 71 initialise dirBlock
+     load  R1, 0
+     add   R1, 1
+     store R1, [FP-3]
+.source 72, fnap superblock
+     load  R1, [t_2_superblock]
+     load  R2, 128
+     zero  R2, R1
+.source 73, assignment/assign dirBlock
+     load  R1, [t_2_superblock]
+     add   R1, 0
+     load  R0, [FP-3]
+     store R0, [R1]
+.source 74, assignment/assign now
+     load  R1, [t_2_superblock]
+     add   R1, 1
+     load  R0, [FP-2]
+     store R0, [R1]
+.source 75, fnap out
+     push  [FP-2]
+     push  s_6
+     push  4
+     call  g_out
+     add   SP, 3
+.source 76, assignment/assign success
+     push  [t_2_superblock]
+     push  0
+     push  1
+     push  2
+     push  8
+     call  g_devctl
+     add   SP, 5
+     store R1, [FP-1]
+.source 77, statement/if
+     load  R1, [FP-1]
+     comp  R1, 1
+     jcond eql, L19
+.source 78, fnap out
+     push  [FP-1]
+     push  s_7
+     push  4
+     call  g_out
+     add   SP, 3
+L19:
+.source 79, fnap directory
+     load  R1, [t_1_directory]
+     load  R2, 128
+     zero  R2, R1
+.source 80, assignment/assign
+     load  R1, [t_1_directory]
+     add   R1, 0
+     load  R0, 0
+     store R0, [R1]
+.source 81, assignment/assign
+     load  R1, [t_1_directory]
+     add   R1, 1
+     load  R0, 0
+     store R0, [R1]
+.source 82, assignment/assign success
+     push  [t_1_directory]
+     push  0
+     push  1
+     push  2
+     push  8
+     call  g_devctl
+     add   SP, 5
+     store R1, [FP-1]
+.source 83, statement/if
+     load  R1, [FP-1]
+     comp  R1, 1
+     jcond eql, L20
+.source 84, fnap out
+     push  [FP-1]
+     push  s_8
+     push  4
+     call  g_out
+     add   SP, 3
+L20:
+L18:
+     load  SP, FP
+     pop   FP
+     ret
+
+.source 87
+                     // Line 87, the function help
+g_help:
+     push  FP
+     load  FP, SP
+.source 88, fnap out
+     push  s_9
+     push  2
+     call  g_out
+     add   SP, 2
+.source 89, fnap out
+     push  s_10
+     push  2
+     call  g_out
+     add   SP, 2
+.source 90, fnap out
+     push  s_11
+     push  2
+     call  g_out
+     add   SP, 2
+.source 91, fnap out
+     push  s_12
+     push  2
+     call  g_out
+     add   SP, 2
+.source 92, fnap out
+     push  s_13
+     push  2
+     call  g_out
+     add   SP, 2
+.source 93, fnap out
+     push  s_14
+     push  2
+     call  g_out
+     add   SP, 2
+.source 94, fnap out
+     push  s_15
+     push  2
+     call  g_out
+     add   SP, 2
+.source 95, fnap out
+     push  s_16
+     push  2
+     call  g_out
+     add   SP, 2
+.source 96, fnap out
+     push  s_17
+     push  2
+     call  g_out
+     add   SP, 2
+.source 97, fnap out
+     push  s_18
+     push  2
+     call  g_out
+     add   SP, 2
+L21:
+     load  SP, FP
+     pop   FP
+     ret
+
+.source 105
+                     // Line 105, the function start
+g_start:
+     push  FP
+     load  FP, SP
+     sub   SP, 21
+                         // word is local 21, FP-21
+.source 106 initialise word
+     load  R0, FP-20
+     store R0, [FP-21]
+.source 107, statement/while
+L23:
+.source 108, fnap out
+     push  s_19
+     push  2
+     call  g_out
+     add   SP, 2
+.source 109, fnap ins
+     push  20
+     push  [FP-21]
+     push  4
+     call  g_ins
+     add   SP, 3
+.source 110, statement/test
+     push  s_20
+     push  [FP-21]
+     push  4
+     call  g_strcmp
+     add   SP, 3
+     comp  R1, 0
+     jcond neq, L25
+.source 111, fnap mount
+     push  0
+     call  g_mount
+     add   SP, 1
+     jump  L26
+L25:
+.source 112, statement/test
+     push  s_21
+     push  [FP-21]
+     push  4
+     call  g_strcmp
+     add   SP, 3
+     comp  R1, 0
+     jcond neq, L27
+.source 113, fnap format
+     push  0
+     call  g_format
+     add   SP, 1
+     jump  L28
+L27:
+.source 114, statement/test
+     push  s_22
+     push  [FP-21]
+     push  4
+     call  g_strcmp
+     add   SP, 3
+     comp  R1, 0
+     jcond neq, L29
+.source 115, fnap help
+     push  0
+     call  g_help
+     add   SP, 1
+     jump  L30
+L29:
+.source 116, statement/if
+     push  s_23
+     push  [FP-21]
+     push  4
+     call  g_strcmp
+     add   SP, 3
+     comp  R1, 0
+     jcond neq, L31
+.source 117, fnap dismount
+     push  0
+     call  g_dismount
+     add   SP, 1
+.source 118, statement/break
+     jump  L24
+L31:
+L30:
+L28:
+L26:
+     jump  L23
+L24:
+L22:
+     load  SP, FP
+     pop   FP
+     ret
+
+t_1_directory: .data 0    // to hold address of following space
+     .space 128
+t_2_superblock: .data 0    // to hold address of following space
+     .space 128
+s_1: .string "Error Disc Reading While Mounting: %d\n"
+s_2: .string "Previously used at %d\n"
+s_3: .string "Directory at block %d\n"
+s_4: .string "Error Disc Reading While Mounting Directory: %d\n"
+s_5: .string "Error writing disc while unmounting: %d\n"
+s_6: .string "Successfully formatted at: %d\n"
+s_7: .string "Error writing while formatting superblock: %d\n"
+s_8: .string "Error writing while formatting directory: %d\n"
+s_9: .string "List of available commands\n"
+s_10: .string "help ~ Shows This page\n"
+s_11: .string "format ~ reformats the disk or mounts if not already mounted\n"
+s_12: .string "mount ~ sets up a formatted disc\n"
+s_13: .string "exit ~ saves memory to disk and dismounts\n"
+s_14: .string "make <name> ~ prompts user to type lines of text until a line of text containing only \'*\' is typed. It is then written to a new file with the given name.\n"
+s_15: .string "show <name> ~ displays contents of name file.\n"
+s_16: .string "import <tname> <dname> ~ read the unix files called tname and create a disc file with its contents called dname\n"
+s_17: .string "export <dname> <tname> ~ write the contents of disc dname to a new unix file called tname.\n"
+s_18: .string "status ~ display useful information about the system. Indicates current contents.\n"
+s_19: .string "> "
+s_20: .string "mount"
+s_21: .string "format"
+s_22: .string "help"
+s_23: .string "exit"
+
+.start start 1
+
+g_project1_reset_statics:
+g_reset_statics:
+  push  fp
+  load  fp, sp
+  push  0
+  load  r1, low:#f_fixes
+  loadh r1, high:#f_fixes
+  add   r1, pc - 2
+  call  r1
+  add   sp, 1
+  load  sp, fp
+  pop   fp
+  ret
+
+f_fixes:
+     load  R1, t_2_superblock
+     add   R1, 1
+     store R1, [t_2_superblock]
+     load  R1, t_1_directory
+     add   R1, 1
+     store R1, [t_1_directory]
+     ret   R8, -16657 override    // -16657 is 0xBEEF
+

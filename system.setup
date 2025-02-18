@@ -1,0 +1,8 @@
+version 202401152142
+memory 0 to 1FFFFF
+memory 7FFE0000 to 7FFFFFFF
+disc 1 maindrive 6000
+random
+load at 400
+sp 80000000
+fp 0

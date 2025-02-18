@@ -1,0 +1,27 @@
+t_1_directory: .data 0    // to hold address of following space
+     .space 128
+t_2_superblock: .data 0    // to hold address of following space
+     .space 128
+s_1: .string "Error Disc Reading While Mounting: %d\n"
+s_2: .string "Previously used at %d\n"
+s_3: .string "Directory at block %d\n"
+s_4: .string "Error Disc Reading While Mounting Directory: %d\n"
+s_5: .string "Error writing disc while unmounting: %d\n"
+s_6: .string "Successfully formatted at: %d\n"
+s_7: .string "Error writing while formatting superblock: %d\n"
+s_8: .string "Error writing while formatting directory: %d\n"
+s_9: .string "List of available commands\n"
+s_10: .string "help ~ Shows This page\n"
+s_11: .string "format ~ reformats the disk or mounts if not already mounted\n"
+s_12: .string "mount ~ sets up a formatted disc\n"
+s_13: .string "exit ~ saves memory to disk and dismounts\n"
+s_14: .string "make <name> ~ prompts user to type lines of text until a line of text containing only \'*\' is typed. It is then written to a new file with the given name.\n"
+s_15: .string "show <name> ~ displays contents of name file.\n"
+s_16: .string "import <tname> <dname> ~ read the unix files called tname and create a disc file with its contents called dname\n"
+s_17: .string "export <dname> <tname> ~ write the contents of disc dname to a new unix file called tname.\n"
+s_18: .string "status ~ display useful information about the system. Indicates current contents.\n"
+s_19: .string "> "
+s_20: .string "mount"
+s_21: .string "format"
+s_22: .string "help"
+s_23: .string "exit"
