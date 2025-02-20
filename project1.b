@@ -246,11 +246,11 @@ let make(name) be {
   }
   fileBlock := allocate_block();
   if fileBlock = -1 then resultis -1;
-  buffer := VEC(512);
+  buffer = VEC(512);
   total := 0;
   while true do {
     out("Enter text: ");
-    line := VEC(100);
+    line = VEC(100);
     ins(line, 100);
     if strcmp(line, "*") = 0 then break;
     total := addto512(buffer, line, total);
@@ -291,7 +291,7 @@ let show(name) be {
   offset := index * dirSize;
   fileBlock := directory ! (offset + 5);
   size := directory ! (offset + 6);
-  buffer := vec(512);
+  buffer = vec(512);
   if devctl(dc$discread, 1, fileBlock, buffer) <> 1 then {
     out("Error: Reading file from disk failed\n");
     resultis -1
@@ -322,7 +322,7 @@ let importFile(tname, dname) be {
     out("Error: Unix file %s not found\n", tname);
     resultis -1
   }
-  buffer := vec(512);
+  buffer = vec(512);
   n := io$read(f, buffer, 512);
   io$close(f);
   if n <= 0 then {
@@ -358,7 +358,7 @@ let exportFile(dname, tname) be {
   offset := index * dirSize;
   fileBlock := directory ! (offset + 5);
   size := directory ! (offset + 6);
-  buffer := vec(512);
+  buffer = vec(512);
   if devctl(dc$discread, 1, fileBlock, buffer) <> 1 then {
     out("Error: Reading disk file failed\n");
     resultis -1
@@ -426,10 +426,10 @@ let help() be {
 */
 let start() be {
   let word, param1, param2, answer;
-  word := vec(20);
-  param1 := vec(20);
-  param2 := vec(20);
-  answer := vec(10);
+  word = vec(20);
+  param1 = vec(20);
+  param2 = vec(20);
+  answer = vec(10);
   while true do {
     out("> ");
     ins(word, 20);
