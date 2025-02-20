@@ -15,6 +15,7 @@ MANIFEST {
 
 let directory = VEC(128);
 let superblock = VEC(128);
+let nextBlock = 0;
 
 let ins(destination, numToRead) be {
   let pos = 0, max = 4 * numToRead - 1, c = inch();
@@ -41,6 +42,26 @@ let strcmp(stringA, stringB) be {
       resultis 0;
     pos +:= 1
     }
+}
+
+let addto512(buff, s, n) be { 
+  let i = 0;
+  while true do {
+    let c = byte i of s;
+    if c = '\0' then
+      resultis n;
+    if n = 512 then
+      resultis 512;
+    byte n of buff := c;
+    i +:= 1;
+    n +:= 1 
+  } 
+}
+
+let alloc() be {
+  let block = nextBlock;
+  nextBlock +:= 1;
+  resultis block;
 }
 
 let mount() be {
@@ -84,6 +105,112 @@ let format() be {
     out("Error writing while formatting directory: %d\n", success);
 }    
 
+let make(name) be {
+  let i = 0, slot = -1;
+  /* There are 128/dirSize entries (here 16) */
+  while i < 16 do {
+    if directory ! (i * dirSize) = 0 then { slot := i; break }
+    i +:= 1
+  }
+  if slot = -1 then {
+    out("Directory full; cannot create new file\n");
+    resultis -1
+  }
+  /* Copy file name (up to 20 bytes) into directory entry */
+  let offset = slot * dirSize;
+  let j = 0;
+  while j < 20 do {
+    let c = byte j of name;
+    directory ! (offset + j) := c;
+    if c = '\0' then break;
+    j +:= 1
+  }
+  /* Allocate a block for file contents */
+  let fileBlock = allocate_block();
+  directory ! (offset + 5) := fileBlock;
+  /* Accumulate file text in a 512-byte buffer */
+  let buffer = vec(512);
+  let total = 0;
+  while true do {
+    out("Enter text: ");
+    let line = vec(100);
+    ins(line, 100);
+    if strcmp(line, "*") = 0 then break;
+    total := addto512(buffer, line, total);
+  }
+  directory ! (offset + 6) := total;
+  if devctl(dc$discwrite, 1, fileBlock, buffer) <> 1 then
+    out("Error writing file to disc\n")
+}
+
+let import(tname, dname) be {
+  let f = io$open(tname, "r");
+  if f = -1 then {
+    out("Error opening unix file: %s\n", tname);
+    resultis -1
+  }
+  /* Find free directory slot */
+  let i = 0, slot = -1;
+  while i < 16 do {
+    if directory ! (i * dirSize) = 0 then { slot := i; break }
+    i +:= 1
+  }
+  if slot = -1 then {
+    out("Directory full\n");
+    resultis -1
+  }
+  let offset = slot * dirSize;
+  let j = 0;
+  while j < 20 do {
+    let c = byte j of dname;
+    directory ! (offset + j) := c;
+    if c = '\0' then break;
+    j +:= 1
+  }
+  let fileBlock = allocate_block();
+  directory ! (offset + 5) := fileBlock;
+  let buffer = vec(512);
+  /* Read from Unix file (assumes the file fits in one block) */
+  let n = io$read(f, buffer, 512);
+  if n <= 0 then {
+    out("Error reading from unix file\n");
+    io$close(f);
+    resultis -1
+  }
+  directory ! (offset + 6) := n;
+  if devctl(dc$discwrite, 1, fileBlock, buffer) <> 1 then
+    out("Error writing imported file to disc\n");
+  io$close(f)
+}
+
+let export(dname, tname) be {
+  let i = 0, found = -1;
+  while i < 16 do {
+    let offset = i * dirSize;
+    if strcmp(directory + offset, dname) = 0 then { found := i; break }
+    i +:= 1
+  }
+  if found = -1 then {
+    out("Disc file not found\n");
+    resultis -1;
+  }
+  let offset = found * dirSize;
+  let fileBlock = directory ! (offset + 5);
+  let size = directory ! (offset + 6);
+  let buffer = vec(512);
+  if devctl(dc$discread, 1, fileBlock, buffer) <> 1 then {
+    out("Error reading disc file\n");
+    resultis -1;
+  }
+  let f = io$open(tname, "w");
+  if f = -1 then {
+    out("Error opening unix file for writing\n");
+    resultis -1;
+  }
+  io$write(f, buffer, size);
+  io$close(f)
+}
+
 let help() be {
   out("List of available commands\n");
   out("help ~ Shows This page\n");
@@ -96,10 +223,6 @@ let help() be {
   out("export <dname> <tname> ~ write the contents of disc dname to a new unix file called tname.\n");
   out("status ~ display useful information about the system. Indicates current contents.\n");
 }
-
-
-
-  
 
 
 let start() be {
@@ -115,7 +238,29 @@ let start() be {
       help()
     else if strcmp(word, "exit") = 0 then {
       dismount();
-      break;
+      break
+    }
+    else if strcmp(word, "make") = 0 then {
+      let filename = vec(20);
+      ins(filename, 20);
+      make(filename)
+    }
+    else if strcmp(word, "show") = 0 then {
+      let filename = vec(20);
+      ins(filename, 20);
+      show(filename)
+    }
+    else if strcmp(word, "import") = 0 then {
+      let tname = vec(20), dname = vec(20);
+      ins(tname, 20);
+      ins(dname, 20);
+      import(tname, dname)
+    }
+    else if strcmp(word, "export") = 0 then {
+      let dname = vec(20), tname = vec(20);
+      ins(dname, 20);
+      ins(tname, 20);
+      export(dname, tname)
     }
   }
 }
