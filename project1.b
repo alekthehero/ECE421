@@ -246,11 +246,11 @@ let make(name) be {
   }
   fileBlock := allocate_block();
   if fileBlock = -1 then resultis -1;
-  buffer := vec(512);
+  buffer := VEC(512);
   total := 0;
   while true do {
     out("Enter text: ");
-    line := vec(100);
+    line := VEC(100);
     ins(line, 100);
     if strcmp(line, "*") = 0 then break;
     total := addto512(buffer, line, total);
@@ -269,9 +269,9 @@ let make(name) be {
     out("Error: Failed to create directory entry\n");
     resultis -1
   }
-  if devctl(dc$discwrite, 1, fileBlock, buffer) <> 1 then {
+  test devctl(dc$discwrite, 1, fileBlock, buffer) <> 1 then {
     out("Error: Writing file to disk failed\n")
-  } else {
+  } or {
     out("File %s created with %d bytes\n", name, total)
   }
   resultis 0
