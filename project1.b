@@ -107,6 +107,11 @@ let format() be {
 
 let make(name) be {
   let i = 0, slot = -1;
+  let offset = 0;
+  let j = 0;
+  let fileBlock = 0;
+  let buffer = vec(512);
+  let total = 0;
   /* There are 128/dirSize entries (here 16) */
   while i < 16 do {
     if directory ! (i * dirSize) = 0 then { slot := i; break }
@@ -117,20 +122,17 @@ let make(name) be {
     resultis -1
   }
   /* Copy file name (up to 20 bytes) into directory entry */
-  let offset = slot * dirSize;
-  let j = 0;
+  offset := slot * dirSize;
   while j < 20 do {
     let c = byte j of name;
     directory ! (offset + j) := c;
     if c = '\0' then break;
     j +:= 1
   }
-  /* Allocate a block for file contents */
-  let fileBlock = allocate_block();
+
+  fileBlock := alloc();
+
   directory ! (offset + 5) := fileBlock;
-  /* Accumulate file text in a 512-byte buffer */
-  let buffer = vec(512);
-  let total = 0;
   while true do {
     out("Enter text: ");
     let line = vec(100);
